@@ -461,7 +461,7 @@
   },400);
 
   // ── WALLET ──
-  let userWallet=500;
+  let userWallet=1800;
   const walletDisplay=document.getElementById('user-wallet');
   function animateWalletIncrement(amount){
     const container=document.querySelector('.wallet-container');
@@ -485,8 +485,8 @@
 
   // ── DEV CONFIG ──
   const devConfig = {
-    winChance:  1.00,   // 0.0 – 1.0
-    lossChance: 0.00,   // 0.0 – 1.0
+    winChance = 0.00,   // 0.0 – 1.0
+    lossChance: 1.00,   // 0.0 – 1.0
     forcedBias: null,   // null or a symbol string like '7️⃣'
   };
 
