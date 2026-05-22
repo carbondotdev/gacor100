@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lucky Royal Casino</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a1a; color: #fff; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
+
+  @keyframes screen-shake {
+    0%, 100% { transform: translate3d(0,0,0); }
+    10% { transform: translate3d(-4px,-4px,0); }
+    20% { transform: translate3d(4px,4px,0); }
+    30% { transform: translate3d(-6px,2px,0); }
+    40% { transform: translate3d(6px,-2px,0); }
+    50% { transform: translate3d(-4px,4px,0); }
+    60% { transform: translate3d(4px,-4px,0); }
+    70% { transform: translate3d(-6px,-2px,0); }
+    80% { transform: translate3d(6px,2px,0); }
+  }
+  .shake-epic { animation: screen-shake 0.4s ease-in-out; }
+
+  .flash-overlay { position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;pointer-events:none;opacity:0; }
+  @keyframes flash-anim { 0%,100%{opacity:0} 50%{opacity:0.25} }
+  .flash-active { animation: flash-anim 0.15s ease-in-out 3; }
+
+  .bombastic-overlay {
+    position:fixed; top:50%; left:50%;
+    transform:translate3d(-50%,-50%,0) scale(0.3);
+    z-index:10000; font-family:'Playfair Display',serif;
+    font-size:clamp(36px,10vw,80px); font-weight:900;
+    text-align:center; color:#fff;
+    text-shadow:0 0 15px #ff0055,0 0 30px #ffcc00;
+    pointer-events:none; white-space:nowrap; opacity:0; will-change:transform,opacity;
+  }
+  @keyframes pop-out {
+    0%   { transform:translate3d(-50%,-50%,0) scale(0.3); opacity:0; }
+    15%  { transform:translate3d(-50%,-50%,0) scale(1.1); opacity:1; }
+    20%  { transform:translate3d(-50%,-50%,0) scale(1.0); opacity:1; }
+    85%  { transform:translate3d(-50%,-50%,0) scale(1.0); opacity:1; }
+    100% { transform:translate3d(-50%,-50%,0) scale(1.8); opacity:0; }
+  }
+  .animate-popup { animation: pop-out 2.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+
+  .confetti-piece {
+    position:fixed; width:8px; height:8px; top:-10px; border-radius:2px;
+    animation:confetti-fall linear forwards; pointer-events:none; z-index:9998; will-change:transform,opacity;
+  }
+  @keyframes confetti-fall {
+    0%   { transform:translate3d(0,0,0) rotate(0deg); opacity:1; }
+    100% { transform:translate3d(0,105vh,0) rotate(540deg); opacity:0; }
+  }
+
+  .stars { position:fixed; top:0;left:0; width:100%;height:100%; pointer-events:none; z-index:0; }
+  .star  { position:absolute; background:#fff; border-radius:50%; }
+
+  /* ── SECRET DEV MENU ── */
+  .dev-menu {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20000;
+    background: linear-gradient(145deg, #0a001a, #1a0035);
+    border: 2px solid #FFD700;
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: min(340px, 92vw);
+    box-shadow: 0 0 60px rgba(255,215,0,0.3), 0 0 120px rgba(100,0,200,0.2);
+  }
+  .dev-menu.open { display: block; animation: popup-bounce 0.35s cubic-bezier(.175,.885,.32,1.275); }
+  @keyframes popup-bounce {
+    0%  { transform:translate(-50%,-50%) scale(0.4); opacity:0; }
+    70% { transform:translate(-50%,-50%) scale(1.05); opacity:1; }
+    100%{ transform:translate(-50%,-50%) scale(1); }
+  }
+  .dev-menu-title {
+    font-family:'Playfair Display',serif; font-size:20px; font-weight:900;
+    background:linear-gradient(90deg,#FFD700,#fff); -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent; background-clip:text;
+    text-align:center; margin-bottom:4px;
+  }
+  .dev-menu-sub { text-align:center; font-size:11px; color:#8060a0; letter-spacing:2px; text-transform:uppercase; margin-bottom:1.25rem; }
+  .dev-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; gap:10px; }
+  .dev-label { font-size:13px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,0.8); white-space:nowrap; }
+  .dev-label small { display:block; font-size:10px; color:#8060a0; font-weight:400; margin-top:2px; }
+  .dev-slider { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:2px; outline:none; cursor:pointer; }
+  .dev-slider.gold { background:linear-gradient(90deg,#3a0060,#FFD700); }
+  .dev-slider.red  { background:linear-gradient(90deg,#3a0000,#ff2255); }
+  .dev-slider.green{ background:linear-gradient(90deg,#003a00,#00cc66); }
+  .dev-slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:#FFD700; cursor:pointer; border:2px solid #fff; }
+  .dev-slider::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:#FFD700; cursor:pointer; border:2px solid #fff; }
+  .dev-val { font-size:13px; font-weight:700; color:#FFD700; min-width:40px; text-align:right; }
+  .dev-divider { height:1px; background:rgba(255,215,0,0.15); margin:0.75rem 0; }
+  .dev-preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1rem; }
+  .dev-preset {
+    flex:1; min-width:80px; padding:8px 6px;
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12);
+    border-radius:6px; color:rgba(255,255,255,0.7); font-family:'Rajdhani',sans-serif;
+    font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .dev-preset:hover { background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.4); color:#FFD700; }
+  .dev-preset.active { background:rgba(255,215,0,0.2); border-color:#FFD700; color:#FFD700; }
+  .dev-close {
+    width:100%; padding:10px; margin-top:0.5rem;
+    background:linear-gradient(135deg,#FFD700,#FF8C00); color:#1a0010;
+    border:none; border-radius:6px; font-family:'Rajdhani',sans-serif;
+    font-size:14px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    cursor:pointer; touch-action:manipulation;
+  }
+  .dev-close:hover { opacity:0.9; }
+  .dev-hint {
+    position:fixed; bottom:80px; right:12px;
+    background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.2);
+    border-radius:8px; padding:6px 12px;
+    font-size:11px; color:rgba(255,215,0,0.5); letter-spacing:1px;
+    pointer-events:none; z-index:200;
+  }
+
+  /* NAV */
+  .nav {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0.5rem 0.75rem; background:rgba(10,0,20,0.97);
+    border-bottom:1px solid rgba(255,215,0,0.15);
+    position:sticky; top:0; z-index:100;
+  }
+  .nav-logo {
+    font-family:'Playfair Display',serif; font-size:clamp(16px,4.5vw,22px); font-weight:700;
+    background:linear-gradient(90deg,#FFD700,#FF8C00);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    cursor:pointer; user-select:none;
+  }
+  .nav-links { display:flex; gap:15px; align-items:center; }
+  .wallet-container {
+    background:linear-gradient(135deg,#15002a,#2b004a);
+    border:2px solid #FFD700; box-shadow:0 0 8px rgba(255,215,0,0.15);
+    border-radius:30px; padding:4px 12px;
+    display:flex; align-items:center; gap:6px;
+    font-weight:700; font-size:clamp(13px,3.8vw,16px); color:#fff;
+    white-space:nowrap; will-change:transform;
+  }
+  .wallet-container span { color:#00ff88; text-shadow:0 0 8px rgba(0,255,136,0.3); }
+  .wallet-pump { animation:wallet-explode 0.3s ease-out alternate 2; border-color:#00ff88 !important; }
+  @keyframes wallet-explode { 0%{transform:scale(1)} 100%{transform:scale(1.15)} }
+  .nav-link { font-size:clamp(10px,2.5vw,13px); font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.6); cursor:pointer; text-decoration:none; }
+  .nav-link:hover { color:#FFD700; }
+
+  /* HERO */
+  .hero {
+    position:relative; z-index:1; text-align:center;
+    padding:clamp(1.5rem,5vw,3rem) 1rem clamp(1rem,4vw,2rem);
+    background:linear-gradient(180deg,#1a0030 0%,#0a0a1a 100%);
+  }
+  .crown { font-size:clamp(28px,8vw,40px); display:block; margin-bottom:4px; }
+  .logo-badge {
+    display:inline-block;
+    background:linear-gradient(135deg,#FFD700,#FF6B00,#FFD700);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    font-family:'Playfair Display',serif; font-size:clamp(32px,10vw,52px); font-weight:900;
+    letter-spacing:2px; line-height:1;
+  }
+  .tagline { font-size:clamp(10px,3vw,16px); letter-spacing:clamp(3px,1.5vw,6px); color:#c0a060; text-transform:uppercase; margin-top:6px; }
+  .hero-cta { margin-top:1.5rem; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .btn-primary {
+    background:linear-gradient(135deg,#FFD700,#FF8C00); color:#1a0010; border:none;
+    padding:clamp(10px,3vw,14px) clamp(20px,6vw,36px);
+    font-family:'Rajdhani',sans-serif; font-size:clamp(14px,4vw,18px); font-weight:700;
+    letter-spacing:2px; text-transform:uppercase; border-radius:4px; cursor:pointer; touch-action:manipulation;
+  }
+
+  /* TICKER */
+  .ticker { background:#12001f; border-top:1px solid #3a1060; border-bottom:1px solid #3a1060; padding:10px 0; overflow:hidden; position:relative; z-index:1; }
+  .ticker-inner { display:flex; gap:60px; animation:scroll-left 25s linear infinite; white-space:nowrap; }
+  @keyframes scroll-left { from{transform:translate3d(0,0,0)} to{transform:translate3d(-50%,0,0)} }
+  .ticker-item{font-size:13px;letter-spacing:1px;color:#d0b060;}
+  .ticker-item span{color:#00ff88;font-weight:700;margin-left:4px;}
+  .ticker-item.loss span{color:#ff4466;}
+
+  /* JACKPOT */
+  .jackpot-banner {
+    background:linear-gradient(135deg,#1a0030,#2a0050,#1a0030);
+    border:1px solid rgba(255,215,0,0.3); border-radius:12px;
+    padding:clamp(1rem,4vw,2rem); text-align:center;
+    margin:1.5rem 1rem; position:relative; z-index:1;
+  }
+  .jackpot-label{font-size:clamp(11px,3vw,13px);letter-spacing:4px;color:#c0a060;text-transform:uppercase;margin-bottom:8px;}
+  .jackpot-amount{
+    font-family:'Playfair Display',serif; font-size:clamp(36px,10vw,56px); font-weight:900;
+    background:linear-gradient(90deg,#FFD700,#fff 40%,#FF8C00 80%,#FFD700);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; line-height:1;
+  }
+  .jackpot-sub{font-size:clamp(11px,2.5vw,13px);color:#8060a0;letter-spacing:2px;margin-top:8px;}
+
+  /* SECTION */
+  .section{position:relative;z-index:1;padding:clamp(1.5rem,4vw,2.5rem) 1rem;}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,30px);text-align:center;margin-bottom:0.3rem;background:linear-gradient(90deg,#FFD700,#fff,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .section-sub{text-align:center;color:#8060a0;font-size:clamp(11px,2.5vw,13px);letter-spacing:3px;text-transform:uppercase;margin-bottom:1.5rem;}
+
+  /* SLOT */
+  .slot-reel-container{will-change:transform;max-width:280px;margin:1rem auto;}
+  .slot-reel{display:flex;justify-content:center;gap:clamp(6px,2vw,8px);}
+  .reel-box{
+    width:clamp(60px,18vw,70px);height:clamp(68px,20vw,80px);
+    background:#12001f;border:2px solid rgba(255,215,0,0.4);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:clamp(30px,9vw,38px);overflow:hidden;
+  }
+  .spin-btn{
+    display:block;margin:10px auto 0;
+    background:linear-gradient(135deg,#FFD700,#FF8C00);color:#1a0010;border:none;
+    padding:clamp(10px,3vw,12px) clamp(32px,10vw,48px);
+    font-family:'Rajdhani',sans-serif;font-size:clamp(15px,4vw,17px);font-weight:700;
+    letter-spacing:3px;text-transform:uppercase;border-radius:4px;cursor:pointer;
+    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  }
+  .win-msg{text-align:center;min-height:28px;font-size:clamp(15px,4vw,20px);font-weight:900;letter-spacing:1px;color:#FFD700;margin-top:10px;}
+
+  /* GAMES */
+  .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;max-width:700px;margin:1.5rem auto 0;}
+  .game-card{border-radius:12px;overflow:hidden;position:relative;border:1px solid rgba(255,215,0,0.2);touch-action:manipulation;}
+  .game-card-inner{padding:1.5rem 0.75rem 1.25rem;text-align:center;position:relative;}
+  .game-icon{font-size:clamp(38px,10vw,52px);display:block;margin-bottom:8px;}
+  .game-name{font-size:clamp(13px,3.5vw,17px);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+  .game-rtp{font-size:11px;letter-spacing:1px;opacity:0.7;}
+  .hot-badge{position:absolute;top:8px;right:8px;background:#ff2255;color:#fff;font-size:9px;font-weight:700;padding:3px 7px;border-radius:3px;}
+  .new-badge{position:absolute;top:8px;left:8px;background:#00cc66;color:#000;font-size:9px;font-weight:700;padding:3px 7px;border-radius:3px;}
+  .game-1{background:linear-gradient(160deg,#1a0035,#3a0060,#1a0035);}
+  .game-2{background:linear-gradient(160deg,#001a35,#003a70,#001a35);}
+  .game-3{background:linear-gradient(160deg,#1a2500,#3a5000,#1a2500);}
+  .game-4{background:linear-gradient(160deg,#350005,#700015,#350005);}
+  .game-5{background:linear-gradient(160deg,#1a1500,#3a3000,#1a1500);}
+  .game-6{background:linear-gradient(160deg,#001a1a,#003a3a,#001a1a);}
+
+  /* LIVE */
+  .live-section{background:#080015;padding:clamp(1.5rem,4vw,2.5rem) 1rem;position:relative;z-index:1;}
+  .live-dot{display:inline-block;width:8px;height:8px;background:#ff2255;border-radius:50%;margin-right:8px;animation:live-pulse 1s ease-in-out infinite;vertical-align:middle;}
+  @keyframes live-pulse{0%,100%{box-shadow:0 0 4px #ff2255;opacity:1}50%{box-shadow:0 0 12px #ff2255;opacity:0.6}}
+  .live-table-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;max-width:700px;margin:1.25rem auto 0;}
+  .live-table-card{background:#100020;border:1px solid rgba(255,0,100,0.25);border-radius:10px;padding:0.875rem;text-align:center;}
+  .dealer-avatar{width:48px;height:48px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid rgba(255,215,0,0.4);}
+  .dealer-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+  .table-game{font-size:11px;color:#8060a0;letter-spacing:1px;margin-bottom:6px;}
+  .table-players{font-size:11px;color:#00cc66;}
+  .min-bet{font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;}
+
+  /* PROMOS */
+  .promos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;max-width:700px;margin:0 auto;}
+  .promo-card{border-radius:10px;padding:clamp(1rem,3vw,1.5rem) 1rem;border:1px solid rgba(255,255,255,0.08);position:relative;overflow:hidden;}
+  .promo-1{background:linear-gradient(135deg,#0a1535,#1a2a60);}
+  .promo-2{background:linear-gradient(135deg,#250010,#500030);}
+  .promo-3{background:linear-gradient(135deg,#0a2510,#154020);}
+  .promo-amount{font-family:'Playfair Display',serif;font-size:clamp(28px,8vw,38px);font-weight:700;color:#FFD700;line-height:1;margin-bottom:4px;}
+  .promo-title{font-size:clamp(13px,3.5vw,15px);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .promo-desc{font-size:clamp(11px,2.5vw,13px);color:rgba(255,255,255,0.6);line-height:1.5;}
+  .promo-icon{position:absolute;top:1rem;right:1rem;font-size:28px;opacity:0.4;}
+  .btn-promo{display:inline-block;margin-top:0.875rem;background:rgba(255,215,0,0.15);color:#FFD700;border:1px solid rgba(255,215,0,0.4);padding:7px 16px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:4px;cursor:pointer;}
+
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.3),transparent);margin:0 1rem;}
+
+  /* FOOTER */
+  .footer{background:#040008;border-top:1px solid #1a0030;padding:1.5rem 1rem;text-align:center;}
+  .footer-logos{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;}
+  .payment-badge{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);}
+  .responsible{font-size:11px;color:rgba(255,255,255,0.25);max-width:500px;margin:0 auto;line-height:1.7;}
+
+  @media(max-width:480px){
+    .nav-links .nav-link{display:none;}
+    .games-grid{grid-template-columns:repeat(2,1fr);}
+    .live-table-grid{grid-template-columns:repeat(2,1fr);}
+    .promos-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div id="flash-overlay" class="flash-overlay"></div>
+<div id="bombastic-banner" class="bombastic-overlay">MEGA WIN!</div>
+<div id="stars-container" class="stars"></div>
+
+<!-- ══ SECRET DEV MENU ══ -->
+<div class="dev-menu" id="devMenu">
+  <div class="dev-menu-title">🎰 DEV CONSOLE</div>
+  <div class="dev-menu-sub">⚠ secret operator panel ⚠</div>
+
+  <div class="dev-label">Quick Presets<small>tap to apply instantly</small></div>
+  <div class="dev-preset-row" style="margin-top:8px;">
+    <button class="dev-preset" onclick="applyPreset('normal')">😐 Normal</button>
+    <button class="dev-preset" onclick="applyPreset('lucky')">🍀 Lucky</button>
+    <button class="dev-preset" onclick="applyPreset('godmode')">👑 God Mode</button>
+    <button class="dev-preset" onclick="applyPreset('rigged')">💀 Rigged</button>
+  </div>
+
+  <div class="dev-divider"></div>
+
+  <div class="dev-row">
+    <div class="dev-label">Win Chance<small>big win probability</small></div>
+    <span class="dev-val" id="valWin">13%</span>
+  </div>
+  <input type="range" class="dev-slider gold" id="sliderWin" min="0" max="100" value="13"
+    oninput="document.getElementById('valWin').textContent=this.value+'%'; devConfig.winChance=parseInt(this.value)/100;">
+
+  <div class="dev-divider"></div>
+
+  <div class="dev-row">
+    <div class="dev-label">Jackpot Bias<small>force specific symbol</small></div>
+    <span class="dev-val" id="valBias">OFF</span>
+  </div>
+  <input type="range" class="dev-slider green" id="sliderBias" min="0" max="8" value="0" step="1"
+    oninput="updateBiasLabel(this.value);">
+
+  <div class="dev-divider"></div>
+
+  <div class="dev-row">
+    <div class="dev-label">Loss Curse Chance<small>bad event probability</small></div>
+    <span class="dev-val" id="valLoss">2%</span>
+  </div>
+  <input type="range" class="dev-slider red" id="sliderLoss" min="0" max="50" value="2"
+    oninput="document.getElementById('valLoss').textContent=this.value+'%'; devConfig.lossChance=parseInt(this.value)/100;">
+
+  <div class="dev-divider"></div>
+
+  <div class="dev-row">
+    <div class="dev-label">Wallet Cheat<small>add funds instantly</small></div>
+    <span class="dev-val" style="color:#00ff88">💰</span>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:4px;">
+    <button class="dev-preset" onclick="cheatAddFunds(500)">+$500</button>
+    <button class="dev-preset" onclick="cheatAddFunds(5000)">+$5K</button>
+    <button class="dev-preset" onclick="cheatAddFunds(100000)">+$100K</button>
+  </div>
+
+  <button class="dev-close" onclick="toggleDevMenu()">✕ CLOSE PANEL</button>
+</div>
+
+<!-- subtle hint for dev mode -->
+<div class="dev-hint" id="devHint" style="display:none;">~ = dev menu</div>
+
+<nav class="nav">
+  <span class="nav-logo" id="navLogo" onclick="handleLogoTap()">♛ Lucky Royal</span>
+  <div class="nav-links">
+    <div class="wallet-container">🪙 <span id="user-wallet">$500</span></div>
+    <a class="nav-link">Games</a>
+    <a class="nav-link">Live</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <span class="crown">♛</span>
+  <div class="logo-badge">LUCKY ROYAL</div>
+  <div class="tagline">Where Fortunes Are Made</div>
+  <div class="hero-cta">
+    <button class="btn-primary" onclick="document.getElementById('main-reel-zone').scrollIntoView({behavior:'smooth'})">🎰 Play Now</button>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">🏆 Maria K. won <span>$4,200</span> on Book of Ra</span>
+    <span class="ticker-item">💎 James T. won <span>$12,500</span> on Mega Moolah</span>
+    <span class="ticker-item loss">😬 Alex W. lost <span>$80</span> on Blackjack</span>
+    <span class="ticker-item">🎰 Priya S. won <span>$850</span> on Starburst</span>
+    <span class="ticker-item">🃏 Ryo M. won <span>$3,300</span> on Live Poker</span>
+    <span class="ticker-item">🎲 Chen L. won <span>$670</span> on Craps</span>
+    <span class="ticker-item loss">😬 Mike D. lost <span>$120</span> on Roulette</span>
+    <span class="ticker-item">⚡ Sara B. won <span>$22,000</span> on Jackpot Slots</span>
+    <span class="ticker-item">🏆 Maria K. won <span>$4,200</span> on Book of Ra</span>
+    <span class="ticker-item">💎 James T. won <span>$12,500</span> on Mega Moolah</span>
+    <span class="ticker-item loss">😬 Alex W. lost <span>$80</span> on Blackjack</span>
+    <span class="ticker-item">🎰 Priya S. won <span>$850</span> on Starburst</span>
+    <span class="ticker-item">🃏 Ryo M. won <span>$3,300</span> on Live Poker</span>
+    <span class="ticker-item">🎲 Chen L. won <span>$670</span> on Craps</span>
+    <span class="ticker-item loss">😬 Mike D. lost <span>$120</span> on Roulette</span>
+    <span class="ticker-item">⚡ Sara B. won <span>$22,000</span> on Jackpot Slots</span>
+  </div>
+</div>
+
+<div class="jackpot-banner">
+  <div class="jackpot-label">🔥 Current Progressive Jackpot</div>
+  <div class="jackpot-amount" id="jackpot">$1,847,239</div>
+  <div class="jackpot-sub">Growing by the second · Last won 3 days ago</div>
+</div>
+
+<section class="section">
+  <div class="section-title">Popular Games</div>
+  <div class="section-sub">✦ Over 2,000 titles ✦</div>
+
+  <div class="slot-reel-container" id="main-reel-zone">
+    <div class="slot-reel" id="reel-shake-target">
+      <div class="reel-box" id="r1">🍒</div>
+      <div class="reel-box" id="r2">💎</div>
+      <div class="reel-box" id="r3">🍋</div>
+    </div>
+  </div>
+  <div class="win-msg" id="win-msg"></div>
+  <button class="spin-btn" onclick="spinReels()">⚡ SPIN ($10)</button>
+
+  <div class="games-grid">
+    <div class="game-card game-1"><div class="hot-badge">HOT</div><div class="game-card-inner"><span class="game-icon">🎰</span><div class="game-name">Mega Slots</div><div class="game-rtp">RTP 96.4%</div></div></div>
+    <div class="game-card game-2"><div class="new-badge">NEW</div><div class="game-card-inner"><span class="game-icon">🃏</span><div class="game-name">Blackjack Pro</div><div class="game-rtp">RTP 99.5%</div></div></div>
+    <div class="game-card game-3"><div class="game-card-inner"><span class="game-icon">🎡</span><div class="game-name">Roulette</div><div class="game-rtp">RTP 97.3%</div></div></div>
+    <div class="game-card game-4"><div class="hot-badge">HOT</div><div class="game-card-inner"><span class="game-icon">🃏</span><div class="game-name">Poker</div><div class="game-rtp">RTP 98.1%</div></div></div>
+    <div class="game-card game-5"><div class="game-card-inner"><span class="game-icon">🎲</span><div class="game-name">Craps</div><div class="game-rtp">RTP 98.6%</div></div></div>
+    <div class="game-card game-6"><div class="new-badge">NEW</div><div class="game-card-inner"><span class="game-icon">🐉</span><div class="game-name">Dragon's Gold</div><div class="game-rtp">RTP 95.8%</div></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="live-section">
+  <div class="section-title"><span class="live-dot"></span>Live Tables</div>
+  <div class="section-sub">Real dealers · Real time</div>
+  <div class="live-table-grid">
+    <div class="live-table-card"><div class="dealer-avatar" style="background:linear-gradient(135deg,#300050,#600090)">👩</div><div class="dealer-name">Sophia</div><div class="table-game">LIVE BACCARAT</div><div class="table-players">⬤ 23 players</div><div class="min-bet">Min $5 · Max $5,000</div></div>
+    <div class="live-table-card"><div class="dealer-avatar" style="background:linear-gradient(135deg,#003050,#006090)">👨</div><div class="dealer-name">Marcus</div><div class="table-game">LIVE ROULETTE</div><div class="table-players">⬤ 41 players</div><div class="min-bet">Min $1 · Max $2,000</div></div>
+    <div class="live-table-card"><div class="dealer-avatar" style="background:linear-gradient(135deg,#302500,#605000)">👩</div><div class="dealer-name">Aria</div><div class="table-game">LIVE BLACKJACK</div><div class="table-players">⬤ 7 players</div><div class="min-bet">Min $10 · Max $10,000</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section">
+  <div class="section-title">Bonuses & Promotions</div>
+  <div class="section-sub">Claim your rewards</div>
+  <div class="promos-grid">
+    <div class="promo-card promo-1"><span class="promo-icon">🎁</span><div class="promo-amount">200%</div><div class="promo-title">Welcome Bonus</div><div class="promo-desc">Up to $1,000 on your first deposit.</div><button class="btn-promo">Claim →</button></div>
+    <div class="promo-card promo-2"><span class="promo-icon">⚡</span><div class="promo-amount">50</div><div class="promo-title">Free Spins</div><div class="promo-desc">No deposit required. New players only.</div><button class="btn-promo">Claim →</button></div>
+    <div class="promo-card promo-3"><span class="promo-icon">♛</span><div class="promo-amount">VIP</div><div class="promo-title">Loyalty Club</div><div class="promo-desc">Earn points on every bet. Redeem for cash.</div><button class="btn-promo">Join →</button></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-logos">
+    <span class="payment-badge">VISA</span><span class="payment-badge">MASTERCARD</span>
+    <span class="payment-badge">PAYPAL</span><span class="payment-badge">BITCOIN</span>
+    <span class="payment-badge">APPLE PAY</span>
+  </div>
+  <div class="responsible">
+    🔞 18+ only. Lucky Royal is a fictional demo website for design purposes only. No real money is involved.
+    If gambling is a problem, please visit <strong>begambleaware.org</strong> for support.
+  </div>
+</footer>
+
+<script>
+  // ── STARS ──
+  const starsContainer = document.getElementById('stars-container');
+  const isMobile = window.innerWidth < 600;
+  for(let i=0;i<(isMobile?30:70);i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2+0.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${0.2+Math.random()*0.8}`;
+    starsContainer.appendChild(s);
+  }
+
+  // ── JACKPOT ──
+  let jackpot=1847239;
+  setInterval(()=>{
+    jackpot+=Math.floor(Math.random()*8+2);
+    document.getElementById('jackpot').textContent='$'+jackpot.toLocaleString();
+  },400);
+
+  // ── WALLET ──
+  let userWallet=500;
+  const walletDisplay=document.getElementById('user-wallet');
+  function animateWalletIncrement(amount){
+    const container=document.querySelector('.wallet-container');
+    container.classList.add('wallet-pump');
+    let currentIncr=0;
+    const step=Math.ceil(Math.abs(amount)/15);
+    const startWallet=userWallet;
+    userWallet+=amount;
+    const timer=setInterval(()=>{
+      currentIncr+=step;
+      if(currentIncr>=Math.abs(amount)){
+        clearInterval(timer);
+        walletDisplay.textContent='$'+userWallet.toLocaleString();
+        setTimeout(()=>container.classList.remove('wallet-pump'),300);
+      } else {
+        const cur = amount>0 ? startWallet+currentIncr : startWallet-currentIncr;
+        walletDisplay.textContent='$'+Math.round(cur).toLocaleString();
+      }
+    },50);
+  }
+
+  // ── DEV CONFIG ──
+  const devConfig = {
+    winChance:  1.00,   // 0.0 – 1.0
+    lossChance: 0.00,   // 0.0 – 1.0
+    forcedBias: null,   // null or a symbol string like '7️⃣'
+  };
+
+  const biasSymbols = [null,'🍒','💎','🍋','⭐','🔔','🍇','7️⃣','🍀'];
+
+  function updateBiasLabel(val){
+    const sym = biasSymbols[parseInt(val)];
+    document.getElementById('valBias').textContent = sym || 'OFF';
+    devConfig.forcedBias = sym;
+  }
+
+  function applyPreset(preset){
+    document.querySelectorAll('.dev-preset').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+    const presets = {
+      normal:  { win:0.13, loss:0.02, bias:0 },
+      lucky:   { win:0.60, loss:0.00, bias:0 },
+      godmode: { win:1.00, loss:0.00, bias:0 },
+      rigged:  { win:0.00, loss:0.80, bias:0 },
+    };
+    const p = presets[preset];
+    devConfig.winChance  = p.win;
+    devConfig.lossChance = p.loss;
+    devConfig.forcedBias = null;
+    document.getElementById('sliderWin').value  = Math.round(p.win*100);
+    document.getElementById('sliderLoss').value = Math.round(p.loss*100);
+    document.getElementById('sliderBias').value = p.bias;
+    document.getElementById('valWin').textContent  = Math.round(p.win*100)+'%';
+    document.getElementById('valLoss').textContent = Math.round(p.loss*100)+'%';
+    document.getElementById('valBias').textContent = 'OFF';
+  }
+
+  function cheatAddFunds(amt){
+    animateWalletIncrement(amt);
+  }
+
+  // ── SECRET MENU TRIGGER ──
+  let tapCount=0, tapTimer=null;
+  function handleLogoTap(){
+    tapCount++;
+    clearTimeout(tapTimer);
+    tapTimer=setTimeout(()=>tapCount=0,800);
+    if(tapCount>=3){ tapCount=0; toggleDevMenu(); }
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key==='`'||e.key==='~') toggleDevMenu();
+  });
+  let devOpen=false;
+  function toggleDevMenu(){
+    devOpen=!devOpen;
+    document.getElementById('devMenu').classList.toggle('open',devOpen);
+    document.getElementById('devHint').style.display = devOpen ? 'none' : 'block';
+  }
+  // Show hint after 3s
+  setTimeout(()=>{ document.getElementById('devHint').style.display='block'; },3000);
+
+  // ── SYMBOLS & PAYOUTS ──
+  const symbols=['🍒','💎','🍋','⭐','🔔','🍇','7️⃣','🍀'];
+  const winPayouts={
+    '🍒🍒🍒': { msg:'🎉 JACKPOT! 🍒', cash:5000, big:true },
+    '💎💎💎': { msg:'💎 Triple Diamonds!', cash:8000, big:true },
+    '🍋🍋🍋': { msg:'🍋 Lemon Payout!', cash:120, big:false },
+    '⭐⭐⭐':  { msg:'⭐ OMEGA WIN! ⭐', cash:10000, big:true },
+    '🔔🔔🔔': { msg:'🔔 Bell Win!', cash:200, big:false },
+    '🍇🍇🍇': { msg:'🍇 Grape Win!', cash:90, big:false },
+    '7️⃣7️⃣7️⃣': { msg:'🔥 TRIPLE 7s! 🔥', cash:20000, big:true },
+    '🍀🍀🍀': { msg:'🍀 Lucky Clover!', cash:300, big:false },
+  };
+  const horrificLosses={
+    '📉📉📉': { msg:'📉 MARKET CRASH! 📉', cash:-100 },
+    '💀💀💀': { msg:'💀 UNHOLY CURSE! 💀', cash:-1000 },
+  };
+
+  // ── SPIN ENGINE ──
+  function spinReels(){
+    if(userWallet<10){
+      document.getElementById('win-msg').textContent='❌ +$500 reloaded!';
+      animateWalletIncrement(500); return;
+    }
+    userWallet-=10;
+    walletDisplay.textContent='$'+userWallet.toLocaleString();
+
+    const reels=['r1','r2','r3'];
+    const btn=document.querySelector('.spin-btn');
+    btn.disabled=true; btn.textContent='⏳ SPINNING...';
+    document.getElementById('win-msg').textContent='';
+
+    let counts=[0,0,0];
+    const maxSpin=12;
+    const rngRoll=Math.random();
+    let targets=[];
+
+    // Apply dev config to outcome
+    if(devConfig.forcedBias){
+      // Force all three reels to the biased symbol
+      targets=[devConfig.forcedBias,devConfig.forcedBias,devConfig.forcedBias];
+    } else if(rngRoll < devConfig.lossChance){
+      const lossKeys=Object.keys(horrificLosses);
+      targets=lossKeys[Math.floor(Math.random()*lossKeys.length)].match(/./gu);
+    } else if(rngRoll < devConfig.lossChance + devConfig.winChance){
+      const winKeys=Object.keys(winPayouts);
+      targets=winKeys[Math.floor(Math.random()*winKeys.length)].match(/./gu);
+    } else {
+      targets=[
+        symbols[Math.floor(Math.random()*symbols.length)],
+        symbols[Math.floor(Math.random()*symbols.length)],
+        symbols[Math.floor(Math.random()*symbols.length)],
+      ];
+      // prevent accidental win
+      const baseCheck=targets.join('');
+      if(winPayouts[baseCheck]) targets[2]=targets[2]==='🍒'?'🍋':'🍒';
+    }
+
+    function tick(i){
+      if(counts[i]<maxSpin){
+        document.getElementById(reels[i]).textContent=symbols[Math.floor(Math.random()*symbols.length)];
+        counts[i]++;
+        setTimeout(()=>tick(i),50+counts[i]*5);
+      } else {
+        document.getElementById(reels[i]).textContent=targets[i];
+        if(i===2){
+          setTimeout(()=>{
+            const key=targets.join('');
+            btn.disabled=false; btn.textContent='⚡ SPIN ($10)';
+            if(winPayouts[key]){
+              const w=winPayouts[key];
+              document.getElementById('win-msg').style.color='#FFD700';
+              document.getElementById('win-msg').textContent=w.msg;
+              if(w.big){ triggerBombasticEffects(w.msg,false); launchConfetti(isMobile?50:120); }
+              else launchConfetti(20);
+              animateWalletIncrement(w.cash);
+            } else if(horrificLosses[key]){
+              const l=horrificLosses[key];
+              document.getElementById('win-msg').style.color='#ff2255';
+              document.getElementById('win-msg').textContent=l.msg;
+              triggerBombasticEffects('MASSIVE LOSS!',true);
+              animateWalletIncrement(l.cash);
+            } else {
+              document.getElementById('win-msg').style.color='#8060a0';
+              const almostWon=targets[0]===targets[1]||targets[1]===targets[2]||targets[0]===targets[2];
+              document.getElementById('win-msg').textContent=almostWon?'🥶 So close! Try again!':'❌ No luck this spin.';
+            }
+          },150);
+        }
+      }
+    }
+    reels.forEach((_,i)=>setTimeout(()=>tick(i),i*100));
+  }
+
+  // ── EFFECTS ──
+  function triggerBombasticEffects(titleText,isLoss=false){
+    const reelZone=document.getElementById('reel-shake-target');
+    reelZone.classList.add('shake-epic');
+    setTimeout(()=>reelZone.classList.remove('shake-epic'),500);
+    const flashEl=document.getElementById('flash-overlay');
+    flashEl.style.background=isLoss?'#ff2255':'#ffcc00';
+    flashEl.classList.add('flash-active');
+    setTimeout(()=>flashEl.classList.remove('flash-active'),500);
+    const overlay=document.getElementById('bombastic-banner');
+    overlay.textContent=titleText;
+    overlay.style.textShadow=isLoss?'0 0 15px #ff0000,0 0 30px #550000':'0 0 15px #ff0055,0 0 30px #ffcc00';
+    overlay.classList.remove('animate-popup');
+    void overlay.offsetWidth;
+    overlay.classList.add('animate-popup');
+  }
+
+  function launchConfetti(count){
+    const colors=['#FFD700','#FF2255','#00FF88','#FF6B00','#00BFFF'];
+    const frag=document.createDocumentFragment();
+    const pieces=[];
+    for(let i=0;i<count;i++){
+      const c=document.createElement('div'); c.className='confetti-piece';
+      c.style.cssText=`left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1.2+Math.random()*1.5}s;animation-delay:${Math.random()*0.2}s;width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;`;
+      frag.appendChild(c); pieces.push(c);
+    }
+    document.body.appendChild(frag);
+    setTimeout(()=>pieces.forEach(p=>p.remove()),3000);
+  }
+</script>
+</body>
+</html>
